@@ -155,11 +155,6 @@ $(document).on('click', '#vidid-type a', function() {
 // Array of Rumble API keys
 var apiKeys = ["AIzaSyCZ437m3YvOjGsjf2ZGl9nLWta8r3Kl92Q"];
 
-// Array of example video/channel IDs
-var exampleItems = ['T0ivG4Ew-Lk', 'UCbKxy8dZtU1JcYFYR7RbB-g', 'UC6g5sQONOBrHvji67JSN7
-
-hQ'];
-
 // Initialize startItem variable to null
 var startItem = null;
 
