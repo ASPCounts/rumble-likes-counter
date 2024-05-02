@@ -103,7 +103,7 @@ $('#vidid-type a').on('click', function(){
 });
 
 
-var apiKeys = ["AIzaSyCZ437m3YvOjGsjf2ZGl9nLWta8r3Kl92Q"],
+var apiKeys = ["AIzaSyCZ437m3YvOjGsjf2ZGl9nLWta8r3Kl92Q"]
     videoid: startItem,
     showtype: 'title',
     intervalVideo: null
