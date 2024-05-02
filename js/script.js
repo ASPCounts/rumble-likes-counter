@@ -1,328 +1,388 @@
+// Function to get query parameter value by name from URL
 function getParameterByName(name, url) {
+    // If URL is not provided, use current window location
     if (!url) url = window.location.href;
+    // Replace special characters in name for regex matching
     name = name.replace(/[\[\]]/g, "\\$&");
+    // Construct regex pattern to match query parameter
     var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+        // Execute regex on URL
         results = regex.exec(url);
+    // If no match found, return null
     if (!results) return null;
+    // If query parameter has no value, return an empty string
     if (!results[2]) return '';
+    // Decode URI component and replace '+' with space in the parameter value, then return
     return decodeURIComponent(results[2].replace(/\+/g, " "));
 }
 
+// Function to set a cookie
 function setCookie(cname, cvalue, exdays) {
+    // Create a new Date object
     var d = new Date();
-    d.setTime(d.getTime() + (exdays*24*60*60*1000));
-    var expires = "expires="+ d.toUTCString();
+    // Set the expiration time in milliseconds
+    d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
+    // Construct the expires string
+    var expires = "expires=" + d.toUTCString();
+    // Set the cookie with name, value, and expiration date, and specify the path
     document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
 }
 
+// Function to get the value of a cookie by name
 function getCookie(cname) {
+    // Construct the name string for the cookie
     var name = cname + "=";
+    // Decode the cookie string
     var decodedCookie = decodeURIComponent(document.cookie);
+    // Split the decoded cookie string into an array using ';'
     var ca = decodedCookie.split(';');
-    for(var i = 0; i <ca.length; i++) {
+    // Loop through the array elements
+    for (var i = 0; i < ca.length; i++) {
         var c = ca[i];
+        // Trim leading whitespace from each array element
         while (c.charAt(0) == ' ') {
             c = c.substring(1);
         }
+        // If the array element starts with the cookie name, return the cookie value
         if (c.indexOf(name) == 0) {
             return c.substring(name.length, c.length);
         }
     }
+    // If no cookie with the provided name is found, return an empty string
     return "";
 }
 
-
-function nl2br (str, is_xhtml) {
+// Function to replace newline characters with HTML line breaks
+function nl2br(str, is_xhtml) {
+    // Define the HTML break tag based on whether XHTML is enabled
     var breakTag = (is_xhtml || typeof is_xhtml === 'undefined') ? '<br />' : '<br>';
+    // Use a regular expression to replace newline characters with HTML line breaks
     return (str + '').replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1' + breakTag + '$2');
 }
 
-function YouTubeGetID(url){
+// Function to extract Rumble video ID from URL
+function RumbleGetID(url) {
+    // Initialize ID variable
     var ID = '';
-    url = url.replace(/(>|<)/gi,'').split(/(vi\/|v=|\/v\/|youtu\.be\/|\/embed\/)/);
-    if(url[2] !== undefined) {
-        ID = url[2].split(/[^0-9a-z_\-]/i);
-        ID = ID[0];
+    // Check if the URL starts with "https://rumble.com/"
+    if (url.startsWith("https://rumble.com/")) {
+        // Split the URL by "/"
+        var parts = url.split("/");
+        // The last part should be the videoId
+        ID = parts[parts.length - 1];
     }
-    else {
-        ID = url;
-    }
+    // Return the extracted ID
     return ID;
 }
 
-
+// Function to get a random element from an array
 function getRandom(list) {
-    return list[Math.floor(Math.random()*list.length)];
+    // Generate a random index and return the corresponding element from the list
+    return list[Math.floor(Math.random() * list.length)];
 }
 
-$('.ov-share .copy').on('click', function(){
+// Event handler for clicking on '.ov-share .copy' element
+$(document).on('click', '.ov-share .copy', function() {
+    // Select the element with id 'shareurl'
     $('#shareurl').select();
+    // Execute copy command
     document.execCommand("copy");
 });
 
-$('#vidid').on('click', function(){
+// Event handler for clicking on '#vidid' element
+$(document).on('click', '#vidid', function() {
+    // Select the element with id 'vidid'
     $(this).select();
 });
 
-$('#formurl').on('submit',function(e){
+// Event handler for form submission with id '#formurl'
+$(document).on('submit', '#formurl', function(e) {
+    // Prevent the default form submission behavior
     e.preventDefault();
+    // Get the video URL element
     var videourl = document.getElementById('vidid');
-    if(videourl.value == $(videourl).data('title')) { //prevent submiting title
+    // If the value of videourl matches its data-title attribute, return false to prevent submission
+    if (videourl.value == $(videourl).data('title')) {
         return false;
     }
-    var id = YouTubeGetID(videourl.value);
+    // Extract the Rumble video ID from the video URL
+    var id = RumbleGetID(videourl.value);
+    // Set the value of videourl to the extracted video ID
     videourl.value = id;
-
+    // Submit the form
     this.submit();
 });
 
-$('#formchannelid').on('submit',function(e){
+// Event handler for form submission with id '#formchannelid'
+$(document).on('submit', '#formchannelid', function(e) {
+    // Prevent the default form submission behavior
     e.preventDefault();
+    // Get the value of the input field with class '.searchchannel'
     var searchName = $(this).find('.searchchannel').val();
+    // Call a function to get the channel ID based on the search name
     ChannelID.getChannelID(searchName);
 });
-$('#vidid-type a').on('click', function(){
-    var input =  $('#vidid');
-    switch($(this).attr('class')) {
+
+// Event handler for clicking on elements with id '#vidid-type a'
+$(document).on('click', '#vidid-type a', function() {
+    // Get the input element with id 'vidid'
+    var input = $('#vidid');
+    // Switch based on the class attribute of the clicked element
+    switch ($(this).attr('class')) {
         case 'set-title':
+            // Set the showtype parameter to 'title'
             Video.params.showtype = 'title';
+            // Get the title from input data and set the input value to the title
             var title = input.data('title');
             input.val(title);
             break;
         case 'set-id':
             var id;
+            // Set the showtype parameter to 'id'
             Video.params.showtype = 'id';
-            if(input.data('channelid') != undefined) {
+            // Check if the input has data for channel ID, if yes, set id accordingly, otherwise set to video ID
+            if (input.data('channelid') != undefined) {
                 id = input.data('channelid');
             } else {
                 id = input.data('videoid');
             }
+            // Set the input value to the determined id
             input.val(id);
             break;
     }
 });
 
+// Array of Rumble API keys
 var apiKeys = ["AIzaSyCZ437m3YvOjGsjf2ZGl9nLWta8r3Kl92Q"];
 
-var exampleItems = ['T0ivG4Ew-Lk', 'UCbKxy8dZtU1JcYFYR7RbB-g', 'UC6g5sQONOBrHvji67JSN7hQ']; //can be channelID, videoID; not URL
-//    var startItem = getRandom(exampleItems);
+// Array of example video/channel IDs
+var exampleItems = ['T0ivG4Ew-Lk', 'UCbKxy8dZtU1JcYFYR7RbB-g', 'UC6g5sQONOBrHvji67JSN7
+
+hQ'];
+
+// Initialize startItem variable to null
 var startItem = null;
 
+// Function to get a random API key from apiKeys array
 function getRandomKey() {
     return getRandom(apiKeys);
 }
 
+// Object to hold video-related parameters and data
 var Video = {};
+// Parameters related to video
 Video.params = {
     videoid: startItem,
     showtype: 'title',
     intervalVideo: null
 };
+// Data related to video
 Video.data = {
     title: null,
     desc: null
-}
+};
 
+// Object to hold channel-related parameters
 var Channel = {};
+// Parameters related to channel
 Channel.params = {
     channelID: startItem
 };
 
-
+// Function to get data for a channel
 Channel.getData = function(successCallback, errorCallback) {
+    // Get a random API key
     var apiKey = getRandomKey();
-    var apiUrl = 'https://www.googleapis.com/youtube/v3/search?part=snippet&channelId='+Channel.params.channelID+'&eventType=live&type=video&maxResults=1&key='+apiKey; //ONLY BY CHANNELID
-//        var apiUrl = 'https://www.googleapis.com/youtube/v3/search?part=snippet&type=channel&maxResults=1&q='+Channel.params.channelID+'&key='+apiKey; //BY CHANNELID/NAME
-//        var apiUrl = 'http://localhost/likescounter/test.json';
-
+    // Construct API URL for channel search
+    var apiUrl = 'https://corsproxy.io/?https://wn0.rumble.com/service.php?api=1&name=video_collection.videos&limit=1&id=' + Channel.params.channelID; //ONLY BY CHANNELID
+    // Perform AJAX request
     $.ajax({
-        success : function(data, textStatus, xhr) {
-            if(data.items.length<1) { //no items
-                if(errorCallback) errorCallback(null,null,'noitems');
+        success: function(data, textStatus, xhr) {
+            // If no items found, invoke errorCallback with 'noitems' parameter
+            if (data.data.length < 1) {
+                if (errorCallback) errorCallback(null, null, 'noitems');
                 return false;
             }
-            if(successCallback) successCallback( data, textStatus, xhr );
+            // If success, invoke successCallback with data
+            if (successCallback) successCallback(data, textStatus, xhr);
         },
-        error : function (xhr, textStatus, errorThrown) {
-            if(xhr.status == 400) {
+        error: function(xhr, textStatus, errorThrown) {
+            // If error status is 400, invoke errorCallback with 'nochannel' parameter
+            if (xhr.status == 400) {
                 errorCallback(null, null, 'nochannel');
                 return false; //prevent setting interval
             }
-            if(errorCallback) errorCallback(xhr, textStatus, errorThrown);
+            // If other error, invoke errorCallback with error details
+            if (errorCallback) errorCallback(xhr, textStatus, errorThrown);
         },
         url: apiUrl,
-        type : 'GET'
+        type: 'GET'
     });
 };
 
+// Initialize snippetIterator variable to 0
 var snippetIterator = 0;
 
+// Function to get data for a video
 Video.getData = function(successCallback, errorCallback, parts) {
-    if(parts == undefined) {
-        parts = 'statistics,liveStreamingDetails';
-    }
-    if(snippetIterator % 30 == 0) {
-        parts = 'snippet,'+parts;
+    // If snippetIterator is multiple of 30, include 'snippet' in parts
+    if (snippetIterator % 30 == 0) {
+        parts = 'snippet,' + parts;
     }
 
+    // Get a random API key
     var apiKey = getRandomKey();
-    console.log(apiKey);
-
-    var apiUrl = 'https://www.googleapis.com/youtube/v3/videos?id='+Video.params.videoid+'&part='+parts+'&key=' + apiKey;
-//        var apiUrl = 'http://davidos.dz.cr/likescounter/check.php';
+    // Construct API URL for video search
+    var apiUrl = 'https://corsproxy.io/?https://wn0.rumble.com/service.php?api=3&name=media.details&url=/' + Video.params.videoid;
+    // Perform AJAX request
     $.ajax({
-        success : function(data, textStatus, xhr) {
-//                console.log(data);
-            if(data.items.length<1) { //no items
-                if(errorCallback) errorCallback(null,null,'noitems');
+        success: function(data, textStatus, xhr) {
+            // If no items found, invoke errorCallback with 'noitems' parameter
+            if (data.items.length < 1) {
+                if (errorCallback) errorCallback(null, null, 'noitems');
                 return false;
             }
+            // Increment snippetIterator
             snippetIterator++;
-            successCallback( data, textStatus, xhr );
+            // Invoke successCallback with data
+            successCallback(data, textStatus, xhr);
         },
-        error : function (xhr, textStatus, errorThrown) {
-            if(errorCallback) errorCallback(xhr, textStatus, errorThrown);
+        error: function(xhr, textStatus, errorThrown) {
+            // Invoke errorCallback with error details
+            if (errorCallback) errorCallback(xhr, textStatus, errorThrown);
         },
         url: apiUrl,
-        type : 'GET'
+        type: 'GET'
     });
 };
 
-
-
-Video.getLikes = function (data) {
-    return data.items[0].statistics.likeCount;
-};
-Video.getDisLikes = function (data) {
-    return data.items[0].statistics.dislikeCount;
+// Function to get likes count from video data
+Video.getLikes = function(data) {
+    return data.rumble_votes.num_votes_up;
 };
 
-Video.getViewCount = function (data) {
-    return data.items[0].statistics.viewCount;
+// Function to get dislikes count from video data
+Video.getDisLikes = function(data) {
+    return data.rumble_votes.num_votes_down;
 };
 
-Video.getCommentCount = function (data) {
-    return data.items[0].statistics.commentCount;
+// Function to get view count from video data
+Video.getViewCount = function(data) {
+    return data.views;
 };
 
-Video.getLiveStreamViewers = function (data) {
-    if(data.items[0].liveStreamingDetails) {
-        return data.items[0].liveStreamingDetails.concurrentViewers;
+// Function to get comment count from video data
+Video.getCommentCount = function(data) {
+    return data.comments.count;
+};
+
+// Function to get live stream viewers count from video data
+Video.getLiveStreamViewers = function(data) {
+    if (data.live == true) {
+        return data.data.watching_now;
     } else {
         return false;
     }
 };
 
-
-Video.checkLiveStream = function (data) {
-    if(data.items[0].liveStreamingDetails) {
+// Function to check if video is a live stream based on video data
+Video.checkLiveStream = function(data) {
+    if (data.live == true) {
         return true;
     } else {
         return false;
     }
 };
 
-Video.getCommentCount = function (data) {
-    return data.items[0].statistics.commentCount;
-};
-
-Video.getTitle = function (data) {
-    if(data.items[0].snippet) {
-        Video.data.title = data.items[0].snippet.title;
-        return data.items[0].snippet.title;
+// Function to get video title from video data
+Video.getTitle = function(data) {
+    if (data.data) {
+        Video.data.title = data.data.title;
+        return data.data.title;
     } else {
         return Video.data.title;
     }
 };
 
-Video.getDescription = function (data) {
-    if(data.items[0].snippet) {
-        Video.data.desc = data.items[0].snippet.description;
-        return data.items[0].snippet.description;
+// Function to get video description from video data
+Video.getDescription = function(data) {
+    if (data.data) {
+        Video.data.desc = data.data.title;
+        return data.data.title;
     }
 };
 
+// Initialize getting, loopStarted, and videoIterator variables to 0
 var getting = 0;
 var loopStarted = 0;
 var videoIterator = 0;
-Video.init = function() {
-    Video.getData(function(data){
-        getting = 0;
 
+// Function to initialize video data retrieval
+Video.init = function() {
+    // Get data for the video
+    Video.getData(function(data) {
+        // Reset getting variable
+        getting = 0;
+        // Hide the '.info' element
         $('.info').hide();
-        if(!loopStarted) {
+        // If loop has not started yet
+        if (!loopStarted) {
+            // Show '.counter' element
             $('.counter').show();
+            // Clear HTML content and hide '.info' element
             $('.info').html('').hide();
-            if(data.items[0].snippet) {
+            // If snippet data exists, update elements accordingly
+            if (data.data) {
                 $('#vidid').val(Video.getTitle(data));
                 $('#vidid').data('title', Video.getTitle(data));
 
-                Video.params.channelId = data.items[0].snippet.channelId;
-                Video.params.channelTitle = data.items[0].snippet.channelTitle;
+                Video.params.channelId = data.data.by.id;
+                Video.params.channelTitle = data.data.by.title;
                 $('.channel-details .channelid').text(Video.params.channelId);
                 $('.channel-details .channelname').text(Video.params.channelTitle);
             }
-
             $('#vidid').data('videoid', Video.params.videoid);
-//                $('.title').text(Video.getTitle(data));
-            if(Video.getLiveStreamViewers(data)) $('.ov-livestreamviewers').addClass('live-on');
 
-
-
-            /*
-             $('.details').html(
-             '<p><strong>Tagi: </strong>'+data.items[0].snippet.tags + '</p>'+
-             '<p><strong>Opis: </strong>'+nl2br(data.items[0].snippet.description) + '</p>'+
-             '<p><strong>KanaÅ‚ID: </strong>'+data.items[0].snippet.channelId + '</p>'+
-             '<p><strong>KanaÅ‚: </strong>'+data.items[0].snippet.channelTitle + '</p>'
-             );
-             */
-
-
+            // Create Odometer instances for like and dislike counts
             new Odometer({
                 el: document.querySelector('.likes'),
                 value: Video.getLikes(data),
-
                 format: '( ddd)'
             });
-
             new Odometer({
                 el: document.querySelector('.dislikes'),
                 value: Video.getDisLikes(data),
-
                 format: '( ddd)'
             });
 
-            if(Video.getLiveStreamViewers(data)) {
+            // If live stream viewers count exists, show it and update total views
+            if (Video.getLiveStreamViewers(data)) {
                 new Odometer({
                     el: document.querySelector('.views'),
                     value: Video.getLiveStreamViewers(data),
-
                     format: '( ddd)'
                 });
-
                 $('.views-total').parent().show();
                 new Odometer({
                     el: document.querySelector('.views-total'),
                     value: Video.getViewCount(data),
-
                     format: '( ddd)'
                 });
             } else {
-//                    $('.livestreamviewers').parent().hide();
                 $('.views-total').parent().hide();
                 new Odometer({
                     el: document.querySelector('.views'),
                     value: Video.getViewCount(data),
-
                     format: '( ddd)'
                 });
             }
 
-            if(!Video.checkLiveStream(data)) { //if not livestream
+            // If not a live stream, show comment count
+            if (!Video.checkLiveStream(data)) {
                 new Odometer({
                     el: document.querySelector('.comments'),
                     value: Video.getCommentCount(data),
+
 
                     format: '( ddd)'
                 });
@@ -330,29 +390,26 @@ Video.init = function() {
                 $('.comments').parent().hide();
             }
 
-
-
-            Video.params.intervalVideo = setInterval(function(){
+            // Set interval for video data retrieval
+            Video.params.intervalVideo = setInterval(function() {
                 videoIterator++;
-                console.log('[VIDEO Interval #'+videoIterator+'] '+new Date()); //just for debug
-                if(!getting) {
+                console.log('[VIDEO Interval #' + videoIterator + '] ' + new Date());
+                if (!getting) {
                     Video.live();
                 }
             }, 7000);
 
-
-            //SAVE NEW REQUEST for analitycs
+            // Save new request for analytics
             var apiUrlSave = 'save-db.php';
             $.ajax({
-                success : function(datasave, textStatus, xhr) {
-                },
-                error : function (xhr, textStatus, errorThrown) {
-                    if(xhr.status == 400) {
+                success: function(datasave, textStatus, xhr) {},
+                error: function(xhr, textStatus, errorThrown) {
+                    if (xhr.status == 400) {
                         return false; //prevent setting interval
                     }
                 },
                 url: apiUrlSave,
-                type : 'POST',
+                type: 'POST',
                 data: {
                     'url': Video.params.videoid,
                     'title': Video.getTitle(data),
@@ -360,102 +417,85 @@ Video.init = function() {
                 }
             });
 
+            // Set loopStarted to true
             loopStarted = 1;
         } else {
-            if(Video.params.showtype == 'title') {
+            // If showtype is 'title', update '#vidid' value with video title
+            if (Video.params.showtype == 'title') {
                 $('#vidid').val(Video.getTitle(data));
             }
-//                $('.title').text(Video.getTitle(data));
             document.querySelector('.likes').innerHTML = Video.getLikes(data);
             document.querySelector('.dislikes').innerHTML = Video.getDisLikes(data);
-            if(Video.checkLiveStream(data)) { //if live then show views total nad live viewers, else only total video views
+            // If live stream, update views with live stream viewers count and total views
+            if (Video.checkLiveStream(data)) {
                 document.querySelector('.views').innerHTML = Video.getLiveStreamViewers(data);
                 document.querySelector('.views-total').innerHTML = Video.getViewCount(data);
             } else {
                 document.querySelector('.views').innerHTML = Video.getViewCount(data);
             }
-
-            if(!Video.checkLiveStream(data)) document.querySelector('.comments').innerHTML = Video.getCommentCount(data);
+            // If not live stream, update comment count
+            if (!Video.checkLiveStream(data)) document.querySelector('.comments').innerHTML = Video.getCommentCount(data);
         }
-
-        console.log(data);
-        console.log('Like: '+Video.getLikes(data));
-        console.log('Dislike: '+Video.getDisLikes(data));
-        console.log('LiveStream Viewers: '+Video.getLiveStreamViewers(data));
-        console.log('Total Views: '+Video.getViewCount(data));
-        console.log('Comments: '+Video.getCommentCount(data));
-        console.log('---');
-
-
-        if(typeof data.items[0].liveStreamingDetails !== 'undefined' && typeof data.items[0].liveStreamingDetails.actualEndTime !== 'undefined') {
-            var ended = data.items[0].liveStreamingDetails.actualEndTime;
-            var date = new Date(ended);
-            var curr_date = date.getDate();
-            var curr_month = date.getMonth() + 1; //Months are zero based
-            var curr_year = date.getFullYear();
-            var curr_hour = date.getHours();
-            var curr_minutes = date.getMinutes();
-            $('.info').show().html(getTrans('live-ended')+': ' + curr_date + "." + curr_month + "." + curr_year + " " + curr_hour + ":" + curr_minutes);
-//                clearInterval(Video.params.intervalVideo);
-        }
-
-    }, function (xhr, textStatus, errorThrown) {
+    }, function(xhr, textStatus, errorThrown) {
+        // If error, handle error and show appropriate message
         getting = 0;
-
         var response = xhr.responseText;
         var obj = JSON.parse(response);
-        if(errorThrown == 'noitems') {
-            $('.info').show().html(getTrans('error-wrong-id')+' :)');
+        if (errorThrown == 'noitems') {
+            $('.info').show().html(getTrans('error-wrong-id') + ' :)');
             clearInterval(Video.params.intervalVideo);
             $('.counter').hide();
             console.log('Terminating');
-        }
-        else if(typeof obj.error.errors[0].domain !== undefined && obj.error.errors[0].domain == 'usageLimits') {
-            console.log('#Error with YouTube API - key limits.. Retrying with other key!#');
+        } else if (typeof obj.error.errors[0].domain !== undefined && obj.error.errors[0].domain == 'usageLimits') {
+            console.log('#Error with Rumble API - key limits.. Retrying with other key!#');
             Video.init(); //no loop problem thanks to loopStarted variable :)
             getting = 1;
             //TODO: remove from array wrong api keys
-        }
-        else {
+        } else {
             $('.info').show().html('Error');
         }
-
-//            clearInterval(intervalVideo); //turn off for infinite loop
         return false;
     });
 };
 
+// Function to retrieve live stream data
 Video.live = function() {
     Video.init();
 };
 
+// Initialize channelIntervalSet and channelIntervalIterator variables to 0
 var channelIntervalSet = 0;
 var channelIntervalIterator = 0;
+
+// Function to retrieve channel data
 Channel.live = function() {
-    Channel.getData(function (data) {
+    // Get channel data
+    Channel.getData(function(data) {
         console.log(data);
+        // Update videoid with live stream video id
         Video.params.videoid = data.items[0].id.videoId;
         $('#vidid').data('channelid', Channel.params.channelID);
         $('.info').html('').hide();
-
-        if(channelIntervalSet == 1) {
+        // If channelIntervalSet is 1, clear intervalChannelID
+        if (channelIntervalSet == 1) {
             clearInterval(intervalChannelID);
         }
+        // Initialize video retrieval
         Video.init();
-    }, function(xhr, textStatus, errorThrown){
-        if(errorThrown == 'noitems') {
+    }, function(xhr, textStatus, errorThrown) {
+        // If no live stream found, show appropriate message and retry
+        if (errorThrown == 'noitems') {
             channelIntervalIterator++;
-            $('.info').show().html(getTrans('error-no-live')+';) #' + channelIntervalIterator);
-        } else if(errorThrown == 'nochannel') {
-            $('.info').show().html(getTrans('error-wrong-id-channel')+'!');
-
+            $('.info').show().html(getTrans('error-no-live') + ';) #' + channelIntervalIterator);
+        } else if (errorThrown == 'nochannel') {
+            $('.info').show().html(getTrans('error-wrong-id-channel') + '!');
             return false;
         } else {
             $('.info').show().html('Error');
         }
-
-        if(channelIntervalSet == 0) {
-            intervalChannelID = setInterval(function(){
+        // If channelIntervalSet is 0, set intervalChannelID to retry
+        if (channelIntervalSet == 0) {
+            intervalChannelID = setInterval(function() {
                 console.log('Refreshing - waiting for livestream');
                 Channel.live();
             }, 7000);
@@ -464,128 +504,185 @@ Channel.live = function() {
     });
 };
 
-
+// Get videoID from URL parameter
 var videoID = getParameterByName('vidid');
-if(videoID) {
+// If videoID exists
+if (videoID) {
+    // Set videoid in Video params
     Video.params.videoid = videoID;
 } else {
     videoID = Video.params.videoid;
 }
 
-if(videoID != null && videoID.length>12) {
+// If videoID is valid and its length is greater than 12, assume it's a channelID and retrieve channel data
+if (videoID != null && videoID.length > 12) {
     Channel.params.channelID = videoID;
     Channel.live();
-} else if(videoID != null) {
+} else if (videoID != null) {
+    // Otherwise, initialize video data retrieval
     Video.init();
 }
 
+// Set value for input with name 'vidid'
 $('input[name=vidid]').val(Video.params.videoid);
 
-
-
+// Object to handle channel ID retrieval
 var ChannelID = {
     channelInfo: null,
 
+    // Function to get channel ID based on name
     getChannelID: function(name) {
         var apiKey = getRandomKey();
-        var apiUrl = 'https://www.googleapis.com/youtube/v3/search?part=snippet&type=channel&maxResults=3&q='+name+'&key='+apiKey; //BY CHANNELID/NAME
+        // Construct API URL for channel search by name
+        var apiUrl = 'https://www.googleapis.com/Rumble/v3/search?part=snippet&type=channel&maxResults=3&q=' + name + '&key=' + apiKey; //BY CHANNELID/NAME
         var $this = this;
 
+        // Perform AJAX request
         $.ajax({
-            success : function(data, textStatus, xhr) {
-                if(data.items.length<1) { //no items
+            success: function(data, textStatus, xhr) {
+                // If no items found, return false
+                if (data.items.length < 1) {
                     return false;
                 }
                 console.log(data);
 
+                // Write channel info to specified div
                 $this.writeInfo('.channellist', data.items);
             },
-            error : function (xhr, textStatus, errorThrown) {
-                if(xhr.status == 400) {
+            error: function(xhr, textStatus, errorThrown) {
+                // If error status is 400, return false
+                if (xhr.status == 400) {
                     return false; //prevent setting interval
                 }
             },
             url: apiUrl,
-            type : 'GET'
+            type: 'GET'
         });
     },
-    writeInfo: function(idDiv, channelInfo) {
-        $(idDiv).empty();
 
-        for (var i = 0, len = channelInfo.length; i < len; i++) {
-            var singleChannelInfo = this.formatDetails(channelInfo[i]);
-
-            $(idDiv).append(
-                '<li>' +
-                '<img class="channelThumb" src="'+singleChannelInfo.channelThumb+'">' +
-                '<div class="channelId"><strong>ChannelID: </strong><a href="?vidid='+singleChannelInfo.channelID+'" target="_blank">'+singleChannelInfo.channelID+'</a></div>' +
-                '<div class="channelTitle"><strong>Nazwa YT: </strong><a href="https://youtube.com/channel/'+singleChannelInfo.channelID+'" target="_blank">'+singleChannelInfo.channelTitle+'</a></div>' +
-                (singleChannelInfo.channelDesc.length>1 ? '<div class="channelDesc"><strong>Opis: </strong>'+singleChannelInfo.channelDesc.substr(0,200)+ '</div>' : '') +
-                '</li>');
+    // Function to write channel info to specified div
+    writeInfo: function(id, items) {
+        // Empty the specified div
+        $(id).empty();
+        var channelId = items[0].id.channelId;
+        var channelTitle = items[0].snippet.channelTitle;
+        // Append each item's channel info to the specified div
+        for (var i = 0; i < items.length; i++) {
+            $(id).append('<div class="item"><a href="javascript:;" class="chooseChannel" data-id="' + items.data.id + '">' + items.data.title + '</a></div>');
         }
-        var ytHelptxt = getTrans('channelid-wrong');
-        $(idDiv).append('<p class="youtube-help">'+ytHelptxt+'</p>');
+        // Show the specified div
+        $(id).show();
+        // Add click event handler for '.chooseChannel' elements
+        $('.chooseChannel').on
 
-
-    },
-    formatDetails: function (channelInfo) {
-        var channelID = channelInfo.id.channelId;
-        var channelTitle = channelInfo.snippet.channelTitle;
-        var channelDesc = channelInfo.snippet.description;
-        var channelThumb = channelInfo.snippet.thumbnails.high.url;
-        var channelObj = {channelID: channelID, channelTitle: channelTitle, channelDesc: channelDesc, channelThumb:channelThumb};
-
-        return channelObj;
+('click', function() {
+            // Get the channel ID from the 'data-id' attribute
+            var channelID = $(this).data('id');
+            // Set the channel ID in the input field with class '.searchchannel'
+            $('.searchchannel').val(channelID);
+            // Hide the specified div
+            $(id).hide();
+            // Submit the form with id '#formchannelid'
+            $('#formchannelid').submit();
+        });
     }
+};
 
-}
-
-//TODO: CHECK FOR END OF STREAM
-//TODO: EMBED search by name from CHANNELID https://www.googleapis.com/youtube/v3/search?part=snippet&type=channel&maxResults=1&q=nick/channelid&key=key
-
-$(document).ready(function(){
-    $('#shareurl').val(window.location.href);
-    $('[data-toggle="tooltip"]').tooltip();
-
-
-    if(getCookie('colorselect-tooltipclose') != 1) {
-        $('.colorselect .infobox').show();
-    }
-
-    $('.colorselect .infobox .closebox').on('click', function(e){
-        e.preventDefault();
-        if(getCookie('colorselect-tooltipclose') != 1) {
-            setCookie('colorselect-tooltipclose',1,60);
-            $('.colorselect .infobox').fadeOut();
-        }
-    });
-
-
-    $('.lang-select').on('change', function() {
-        $(this).submit();
-    });
-
+// Event handler for clicking on '.chooseChannel' elements
+$(document).on('click', '.chooseChannel', function() {
+    // Get the channel ID from the 'data-id' attribute
+    var channelID = $(this).data('id');
+    // Set the channel ID in the input field with class '.searchchannel'
+    $('.searchchannel').val(channelID);
+    // Hide the specified div
+    $('.channellist').hide();
+    // Submit the form with id '#formchannelid'
+    $('#formchannelid').submit();
 });
 
-if(Video.params.videoid == 'YbJOTdZBX1g') {
-    $.notify({
-        message: 'Yesssss, we fixed it ;) It was <strong>finished live</strong>, so It wasn\'t counting.. Test now!'
-    },{
-        type: 'danger',
-        delay: 5000,
-        placement: {
-            align: 'right'
-        }
-    });
-} else {
-    $.notify({
-        message: getTrans('notify-problems-refresh')
-    },{
-        type: 'warning',
-        delay: 10000,
-        offset: {
-            y: 60,
-            x: 20
-        },
-    });
+// Function to show the input field with id 'shareurl'
+function showEmbedUrl() {
+    $('#shareurl').show();
 }
+
+// Function to hide the input field with id 'shareurl'
+function hideEmbedUrl() {
+    $('#shareurl').hide();
+}
+
+// Function to open the share dialog
+function shareDialog() {
+    // If the share dialog is hidden, show it
+    if ($('#overlay').is(':hidden')) {
+        $('#overlay').show();
+    }
+}
+
+// Function to close the share dialog
+function closeShareDialog() {
+    // If the share dialog is visible, hide it
+    if ($('#overlay').is(':visible')) {
+        $('#overlay').hide();
+    }
+}
+
+// Function to open the share dialog
+function openEmbedDialog() {
+    // Show the embed URL input field
+    showEmbedUrl();
+    // Open the share dialog
+    shareDialog();
+}
+
+// Function to close the share dialog
+function closeEmbedDialog() {
+    // Hide the embed URL input field
+    hideEmbedUrl();
+    // Close the share dialog
+    closeShareDialog();
+}
+
+// Event handler for clicking on '.share' element
+$(document).on('click', '.share', function() {
+    // Open the share dialog
+    shareDialog();
+});
+
+// Event handler for clicking on '.close' element
+$(document).on('click', '.close', function() {
+    // Close the share dialog
+    closeShareDialog();
+});
+
+// Event handler for clicking on '.embed' element
+$(document).on('click', '.embed', function() {
+    // Open the embed dialog
+    openEmbedDialog();
+});
+
+// Event handler for clicking on '.close' element within the overlay
+$(document).on('click', '#overlay .close', function() {
+    // Close the embed dialog
+    closeEmbedDialog();
+});
+
+// Event handler for clicking on the overlay background
+$(document).on('click', '#overlay', function(e) {
+    // If the click target is the overlay itself (not a child element), close the embed dialog
+    if (e.target === this) {
+        closeEmbedDialog();
+    }
+});
+
+// Event handler for clicking on '.share' element within the overlay
+$(document).on('click', '#overlay .share', function() {
+    // Close the embed dialog
+    closeEmbedDialog();
+});
+
+// Event handler for clicking on '.embed' element within the overlay
+$(document).on('click', '#overlay .embed', function() {
+    // Close the embed dialog
+    closeEmbedDialog();
+});
+```
